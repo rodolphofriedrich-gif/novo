@@ -168,7 +168,7 @@ std::string SynthManager::getPresetList() {
         const char *name = fluid_preset_get_name(preset);
         result << fluid_preset_get_banknum(preset) << "|"
                << fluid_preset_get_num(preset) << "|"
-               << (name != nullptr ? name : "Preset") << "\\n";
+               << (name != nullptr ? name : "Preset") << "\n";
     }
     return result.str();
 }

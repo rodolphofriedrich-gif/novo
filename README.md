@@ -1,45 +1,44 @@
 # Android MIDI Synth
 
-The Android MIDI Synth project is an example Android application written in Kotlin, which processes
-MIDI events in C/C++ and plays SF2/SF3 sounds using
-[FluidSynth](https://github.com/FluidSynth/fluidsynth) via JNI (C language).
+Aplicativo Android que recebe eventos MIDI por **USB** e **Bluetooth LE (BLE)** e os reproduz pelo motor **FluidSynth**, usando Kotlin, C++ e JNI.
 
-- Article (in Portuguese): [Criando um App Sintetizador MIDI para Android com Kotlin e C++](https://embarcados.com.br/criando-um-app-sintetizador-midi-para-android-com-kotlin-e-c/)
-- English version: [Developing a MIDI Synthesizer App for Android Using Kotlin and C++](https://tinyurl.com/34vsycr3)
+## Recursos
 
-## License
+- Entrada MIDI USB e Bluetooth LE.
+- Reprodução de notas, Note Off e Control Change.
+- Suporte a canais MIDI, troca de programa e pitch bend.
+- SoundFont padrão Kawai Stereo Grand em formato SF3.
+- Síntese nativa com FluidSynth e saída de áudio Oboe em baixa latência.
 
-Distributed under the [MIT License](https://spdx.org/licenses/MIT.html).
+## Compilação
 
-See [LICENSE](https://github.com/robsonsmartins/android-midi-synth/blob/main/LICENSE) file for more
-information.
+O projeto usa Gradle, Android Gradle Plugin e CMake/NDK.
 
-Some components used in this project are available under other licenses. Check each license file
-distributed with third-party components:
+Para gerar o APK de depuração em um ambiente com Android SDK, NDK e Gradle configurados:
 
-- [FluidSynth](https://github.com/robsonsmartins/android-midi-synth/blob/main/app/src/main/cpp/fluidsynth/): LGPL 2.1
-- [KawaiStereoGrand SoundFont](https://github.com/robsonsmartins/android-midi-synth/blob/main/app/src/main/assets/): CC0 1.0 Universal 
+```bash
+gradle assembleDebug
+```
 
-Some brands mentioned are registered and are the property of the respective deteiners/manufacturers.
+O fluxo automatizado está em [GitHub Actions](.github/workflows/build-apk.yml). O APK de depuração é publicado como artefato da execução.
 
-The same "Terms and Conditions" and "Privacy Policy" of the
-[Robson Martins Home Page](https://www.robsonmartins.com) apply here:
+## Arquitetura
 
-- [Terms and Conditions](https://www.robsonmartins.com/content/policy/terms.php)
-- [Privacy Policy](https://www.robsonmartins.com/content/policy/privacy.php)
+- `app/src/main/java`: atividade, gerenciamento MIDI USB/BLE e interface JNI do sintetizador.
+- `app/src/main/cpp`: integração C++ com FluidSynth.
+- `app/src/main/cpp/fluidsynth`: cabeçalhos e bibliotecas nativas pré-compiladas.
+- `app/src/main/assets`: SoundFont padrão.
 
-## Contact
+As bibliotecas nativas atualmente incluídas abrangem `arm64-v8a`, `armeabi-v7a`, `x86` e `x86_64`.
 
-[![Home Page][contact-site-shield]][contact-site-url] [![LinkedIn][contact-linkedin-shield]][contact-linkedin-url]
+## Licenças e créditos
 
-This work is licensed under a [MIT License][mit].
+O código deste projeto é distribuído sob a licença MIT, conforme o arquivo [LICENSE](LICENSE).
 
-[![MIT License][mit-image]][mit]
+O projeto utiliza componentes de terceiros que mantêm suas próprias licenças. Consulte os arquivos de licença distribuídos junto a cada componente, especialmente:
 
-[mit]: https://spdx.org/licenses/MIT.html
-[mit-image]: https://img.shields.io/badge/License-MIT-yellow.svg
+- FluidSynth: licença LGPL 2.1.
+- Kawai Stereo Grand SoundFont: CC0 1.0 Universal.
+- Drivers MIDI USB e BLE: licenças dos respectivos projetos upstream.
 
-[contact-site-shield]: https://img.shields.io/badge/Home%20Page-robsonmartins.com-green?style=plastic
-[contact-site-url]: https://www.robsonmartins.com
-[contact-linkedin-shield]: https://img.shields.io/badge/LinkedIn-robsonmartins-blue?style=plastic
-[contact-linkedin-url]: https://www.linkedin.com/in/robsonmartins/
+Este aplicativo deriva do trabalho original [Android MIDI Synth de Robson Martins](https://github.com/robsonsmartins/android-midi-synth) e do artigo [Criando um App Sintetizador MIDI para Android com Kotlin e C++](https://embarcados.com.br/criando-um-app-sintetizador-midi-para-android-com-kotlin-e-c/).

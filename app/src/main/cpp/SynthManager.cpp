@@ -94,8 +94,16 @@ bool SynthManager::loadSF(const char *soundfontPath, int program) {
     // load soundfont
     int id = fluid_synth_sfload(synth, soundfontPath, 0);
     if (id == FLUID_FAILED) return false;
-    fluid_synth_sfont_select(synth, 0, id);
-    fluid_synth_program_change(synth, 0, program);
+    const int previousSoundfontId = soundfontId;
+    // Disponibiliza o SoundFont em todos os canais MIDI, não apenas no canal 0.
+    for (int channel = 0; channel < 16; ++channel) {
+        fluid_synth_sfont_select(synth, channel, id);
+        fluid_synth_program_change(synth, channel, program);
+    }
+    // Libera o SoundFont anterior somente depois de selecionar o novo em todos os canais.
+    if (previousSoundfontId != -1) {
+        fluid_synth_sfunload(synth, previousSoundfontId, 1);
+    }
     soundfontId = id;
     return true;
 }

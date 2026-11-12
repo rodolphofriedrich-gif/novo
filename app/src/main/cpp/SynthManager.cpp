@@ -30,8 +30,6 @@
 
 #include <jni.h>
 #include <unistd.h>
-
-#include "MidiSpec.h"
 #include "SynthManager.h"
 
 /* @brief Default sample rate of the FluidSynth, in kHz. */

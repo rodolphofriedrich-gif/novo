@@ -10,6 +10,9 @@ material = "1.12.0"
 activity = "1.9.3"
 constraintlayout = "2.2.0"
 oboe = "1.9.0"
+# ⬇️ NOVO: versões das bibliotecas kshoji
+usbMidiDriver = "0.1.12"
+bleMidi = "0.0.19"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -21,8 +24,10 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 oboe = { group = "com.google.oboe", name = "oboe", version.ref = "oboe" }
+# ⬇️ NOVO: bibliotecas kshoji via JitPack
+kshoji-usb-midi-driver = { group = "com.github.kshoji", name = "USB-MIDI-Driver", version.ref = "usbMidiDriver" }
+kshoji-ble-midi = { group = "com.github.kshoji", name = "BLE-MIDI-for-Android", version.ref = "bleMidi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-

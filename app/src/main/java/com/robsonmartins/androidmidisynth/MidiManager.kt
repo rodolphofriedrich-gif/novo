@@ -43,9 +43,13 @@ class MidiManager(
 
         override fun onMidiSystemExclusive(sender: BleMidiDevice, systemExclusive: ByteArray) {}
         override fun onMidiPolyphonicAftertouch(sender: BleMidiDevice, channel: Int, note: Int, pressure: Int) {}
-        override fun onMidiProgramChange(sender: BleMidiDevice, channel: Int, program: Int) {}
+        override fun onMidiProgramChange(sender: BleMidiDevice, channel: Int, program: Int) {
+            onMidiEvent(0xC0 or (channel and 0x0F), program, 0)
+        }
         override fun onMidiChannelAftertouch(sender: BleMidiDevice, channel: Int, pressure: Int) {}
-        override fun onMidiPitchWheel(sender: BleMidiDevice, channel: Int, amount: Int) {}
+        override fun onMidiPitchWheel(sender: BleMidiDevice, channel: Int, amount: Int) {
+            onMidiEvent(0xE0 or (channel and 0x0F), amount and 0x7F, (amount shr 7) and 0x7F)
+        }
         override fun onMidiTimeCodeQuarterFrame(sender: BleMidiDevice, timing: Int) {}
         override fun onMidiSongSelect(sender: BleMidiDevice, song: Int) {}
         override fun onMidiSongPositionPointer(sender: BleMidiDevice, position: Int) {}
@@ -102,9 +106,13 @@ class MidiManager(
                 override fun onMidiSystemCommonMessage(sender: UsbMidiDevice, cable: Int, bytes: ByteArray) {}
                 override fun onMidiSystemExclusive(sender: UsbMidiDevice, cable: Int, systemExclusive: ByteArray) {}
                 override fun onMidiPolyphonicAftertouch(sender: UsbMidiDevice, cable: Int, channel: Int, note: Int, pressure: Int) {}
-                override fun onMidiProgramChange(sender: UsbMidiDevice, cable: Int, channel: Int, program: Int) {}
+                override fun onMidiProgramChange(sender: UsbMidiDevice, cable: Int, channel: Int, program: Int) {
+                    onMidiEvent(0xC0 or (channel and 0x0F), program, 0)
+                }
                 override fun onMidiChannelAftertouch(sender: UsbMidiDevice, cable: Int, channel: Int, pressure: Int) {}
-                override fun onMidiPitchWheel(sender: UsbMidiDevice, cable: Int, channel: Int, amount: Int) {}
+                override fun onMidiPitchWheel(sender: UsbMidiDevice, cable: Int, channel: Int, amount: Int) {
+                    onMidiEvent(0xE0 or (channel and 0x0F), amount and 0x7F, (amount shr 7) and 0x7F)
+                }
                 override fun onMidiSingleByte(sender: UsbMidiDevice, cable: Int, byte1: Int) {}
                 override fun onMidiTimeCodeQuarterFrame(sender: UsbMidiDevice, cable: Int, timing: Int) {}
                 override fun onMidiSongSelect(sender: UsbMidiDevice, cable: Int, song: Int) {}
@@ -123,7 +131,6 @@ class MidiManager(
         } catch (e: Exception) {
             onLog("Erro USB: ${e.message}")
         }
-
     }
 
     fun startBle() {

@@ -1,8 +1,11 @@
 package com.robsonmartins.androidmidisynth
 
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
@@ -165,6 +168,7 @@ class MainActivity : AppCompatActivity() {
                 if (loadedPresets.isEmpty()) {
                     throw IOException("O arquivo não contém instrumentos reconhecidos.")
                 }
+                synthManager.selectPreset(loadedPresets.first())
 
                 runOnUiThread {
                     presets = loadedPresets
@@ -173,11 +177,24 @@ class MainActivity : AppCompatActivity() {
                     txtSoundFontDetails.text =
                         "${formatFileSize(file.length())}  •  ${presets.size} instrumentos encontrados"
 
-                    val adapter = ArrayAdapter(
+                    val adapter = object : ArrayAdapter<String>(
                         this,
                         android.R.layout.simple_spinner_item,
                         presets.map { it.toString() }
-                    )
+                    ) {
+                        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                            return super.getView(position, convertView, parent).also {
+                                (it as? TextView)?.setTextColor(Color.WHITE)
+                            }
+                        }
+
+                        override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                            return super.getDropDownView(position, convertView, parent).also {
+                                it.setBackgroundColor(Color.rgb(17, 26, 43))
+                                (it as? TextView)?.setTextColor(Color.WHITE)
+                            }
+                        }
+                    }
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinnerPresets.adapter = adapter
                     spinnerPresets.isEnabled = true

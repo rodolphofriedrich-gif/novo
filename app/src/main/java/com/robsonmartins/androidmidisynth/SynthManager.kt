@@ -30,7 +30,7 @@ class SynthManager(private val context: Context) {
     }
 
     fun setVolume(volume: Int) {
-        fluidsynthCC(7, volume)
+        fluidsynthCC(0, 7, volume)
     }
 
     /**
@@ -44,7 +44,6 @@ class SynthManager(private val context: Context) {
             0xB0 -> fluidsynthCC(status and 0x0F, data1, data2)
             0xC0 -> fluidsynthProgramChange(status and 0x0F, data1)
             0xE0 -> fluidsynthPitchBend(status and 0x0F, (data2 shl 7) or data1)
-            // Pitch bend (0xE0) e program change (0xC0) podem ser adicionados depois.
         }
     }
 

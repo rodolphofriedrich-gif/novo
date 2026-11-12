@@ -25,8 +25,8 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 oboe = { group = "com.google.oboe", name = "oboe", version.ref = "oboe" }
 # ⬇️ NOVO: bibliotecas kshoji via JitPack
-kshoji-usb-midi-driver = { group = "com.github.kshoji", name = "USB-MIDI-Driver", version.ref = "usbMidiDriver" }
-kshoji-ble-midi = { group = "com.github.kshoji", name = "BLE-MIDI-for-Android", version.ref = "bleMidi" }
+kshoji-usb-midi-driver = { group = "jp.kshoji", name = "midi-driver", version = "0.1.12" }
+kshoji-ble-midi = { group = "jp.kshoji", name = "ble-midi", version = "0.0.19" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

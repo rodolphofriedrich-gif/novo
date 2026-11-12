@@ -32,18 +32,13 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    ndkVersion = "27.0.11902837 rc2"
+    // ⬇️ AJUSTE: removido o sufixo " rc2" (release candidate não é instalável)
+    ndkVersion = "27.0.11902837"
     externalNativeBuild {
         cmake {
             path("src/main/cpp/CMakeLists.txt")
         }
     }
-}
-
-// ⬇️ NOVO: repositórios para as bibliotecas kshoji
-repositories {
-    maven { url = uri("https://jitpack.io") }
-    maven { url = uri("https://github.com/kshoji/USB-MIDI-Driver/raw/master/MIDIDriver/snapshots") }
 }
 
 dependencies {
@@ -56,6 +51,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     // ⬇️ NOVO: drivers MIDI kshoji
-    implementation("com.github.kshoji:USB-MIDI-Driver:0.1.4")
-    implementation("com.github.kshoji:BLE-MIDI-for-Android:0.0.9")
+    implementation(libs.kshoji.usb.midi.driver)
+    implementation(libs.kshoji.ble.midi)
 }

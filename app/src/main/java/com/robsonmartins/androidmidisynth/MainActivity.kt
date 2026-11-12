@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
 
     private var presets: List<SoundFontPreset> = emptyList()
     private var soundFontLoaded = false
+    private var synthReady = false
     private var octaveShift = 0
     private var loadedSoundFontFile: File? = null
     private val synthLock = Any()
@@ -125,7 +126,7 @@ class MainActivity : AppCompatActivity() {
         seekVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 txtVolumeValue.text = progress.toString()
-                if (::synthManager.isInitialized) synchronized(synthLock) { synthManager.setVolume(progress) }
+                if (synthReady) synchronized(synthLock) { synthManager.setVolume(progress) }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
@@ -134,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         seekReverb.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 txtReverbValue.text = progress.toString()
-                if (::synthManager.isInitialized) synchronized(synthLock) { synthManager.setReverb(progress) }
+                if (synthReady) synchronized(synthLock) { synthManager.setReverb(progress) }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
@@ -168,7 +169,10 @@ class MainActivity : AppCompatActivity() {
                 importedFile = file
                 val loadedPresets = synchronized(synthLock) {
                     if (activityDestroyed) throw IOException("A tela do aplicativo foi encerrada.")
-                    if (!::synthManager.isInitialized) synthManager = SynthManager()
+                    if (!synthReady) {
+                        synthManager = SynthManager()
+                        synthReady = true
+                    }
                     synthManager.setVolume(seekVolume.progress)
                     synthManager.setReverb(seekReverb.progress)
                     synthManager.allSoundsOff()
@@ -228,6 +232,12 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (error: Exception) {
                 importedFile?.delete()
+                if (!soundFontLoaded && synthReady) {
+                    synchronized(synthLock) {
+                        synthManager.release()
+                        synthReady = false
+                    }
+                }
                 if (activityDestroyed) return@Thread
                 runOnUiThread {
                     if (activityDestroyed) return@runOnUiThread
@@ -304,10 +314,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         activityDestroyed = true
-        if (::synthManager.isInitialized) {
+        if (synthReady) {
             synchronized(synthLock) {
                 pianoKeyboard.clearPressedKeys()
                 synthManager.release()
+                synthReady = false
             }
         }
         loadedSoundFontFile?.delete()

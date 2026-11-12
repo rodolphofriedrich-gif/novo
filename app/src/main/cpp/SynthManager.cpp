@@ -29,6 +29,7 @@
 // -----------------------------------------------------------------------------------------------
 
 #include <jni.h>
+#include <sstream>
 #include "SynthManager.h"
 
 /* @brief Default sample rate of the FluidSynth, in kHz. */
@@ -137,6 +138,39 @@ void SynthManager::programChange(int channel, int program) {
 void SynthManager::pitchBend(int channel, int value) {
     if (synth == nullptr) return;
     fluid_synth_pitch_bend(synth, channel & 0x0F, value & 0x3FFF);
+}
+
+void SynthManager::selectPreset(int bank, int program) {
+    if (synth == nullptr || soundfontId < 0) return;
+    for (int channel = 0; channel < 16; ++channel) {
+        fluid_synth_program_select(
+            synth, channel, soundfontId, bank, program & 0x7F
+        );
+    }
+}
+
+void SynthManager::allSoundsOff() {
+    if (synth == nullptr) return;
+    for (int channel = 0; channel < 16; ++channel) {
+        fluid_synth_all_sounds_off(synth, channel);
+    }
+}
+
+std::string SynthManager::getPresetList() {
+    if (synth == nullptr || soundfontId < 0) return "";
+    fluid_sfont_t *soundfont = fluid_synth_get_sfont_by_id(synth, soundfontId);
+    if (soundfont == nullptr) return "";
+
+    std::ostringstream result;
+    fluid_sfont_iteration_start(soundfont);
+    fluid_preset_t *preset = nullptr;
+    while ((preset = fluid_sfont_iteration_next(soundfont)) != nullptr) {
+        const char *name = fluid_preset_get_name(preset);
+        result << fluid_preset_get_banknum(preset) << "|"
+               << fluid_preset_get_num(preset) << "|"
+               << (name != nullptr ? name : "Preset") << "\\n";
+    }
+    return result.str();
 }
 
 void SynthManager::setLatency(int ms){
@@ -251,6 +285,25 @@ JNIEXPORT void JNICALL
 Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthPitchBend(
         JNIEnv *env, jobject, int channel, int value) {
     SynthManager::getInstance()->pitchBend(channel, value);
+}
+
+JNIEXPORT void JNICALL
+Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthSelectPreset(
+        JNIEnv *env, jobject, int bank, int program) {
+    SynthManager::getInstance()->selectPreset(bank, program);
+}
+
+JNIEXPORT void JNICALL
+Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthAllSoundsOff(
+        JNIEnv *env, jobject) {
+    SynthManager::getInstance()->allSoundsOff();
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthGetPresetList(
+        JNIEnv *env, jobject) {
+    const std::string presets = SynthManager::getInstance()->getPresetList();
+    return env->NewStringUTF(presets.c_str());
 }
 
 JNIEXPORT void JNICALL

@@ -49,8 +49,4 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
-    // ⬇️ NOVO: drivers MIDI kshoji
-    implementation(libs.kshoji.usb.midi.driver)
-    implementation(libs.kshoji.ble.midi)
 }

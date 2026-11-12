@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (soundFontLoaded && position in presets.indices) {
                     synthManager.selectPreset(presets[position])
-                    txtStatus.text = "Instrumento: \${presets[position].name}"
+                    txtStatus.text = "Instrumento: ${presets[position].name}"
                 }
             }
 
@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
         val baseNote = 48 + octaveShift * 12
         pianoKeyboard.setBaseNote(baseNote)
         val octave = (baseNote / 12) - 1
-        txtOctave.text = "C\${octave} – B\${octave + 1}"
+        txtOctave.text = "C${octave} – B${octave + 1}"
     }
 
     private fun importSoundFont(uri: Uri) {
@@ -171,7 +171,7 @@ class MainActivity : AppCompatActivity() {
                     soundFontLoaded = true
                     txtSoundFontName.text = displayName
                     txtSoundFontDetails.text =
-                        "\${formatFileSize(file.length())}  •  \${presets.size} instrumentos encontrados"
+                        "${formatFileSize(file.length())}  •  ${presets.size} instrumentos encontrados"
 
                     val adapter = ArrayAdapter(
                         this,
@@ -224,7 +224,7 @@ class MainActivity : AppCompatActivity() {
         if (!directory.exists() && !directory.mkdirs()) {
             throw IOException("Não foi possível criar a pasta interna dos SoundFonts.")
         }
-        val destination = File(directory, "\${System.currentTimeMillis()}_\$safeName")
+        val destination = File(directory, "${System.currentTimeMillis()}_$safeName")
 
         val input = contentResolver.openInputStream(uri)
             ?: throw IOException("Não foi possível ler o arquivo selecionado.")
@@ -241,7 +241,7 @@ class MainActivity : AppCompatActivity() {
         return if (megabytes >= 1.0) {
             String.format(java.util.Locale.getDefault(), "%.1f MB", megabytes)
         } else {
-            "\${(bytes / 1024).coerceAtLeast(1)} KB"
+            "${(bytes / 1024).coerceAtLeast(1)} KB"
         }
     }
 

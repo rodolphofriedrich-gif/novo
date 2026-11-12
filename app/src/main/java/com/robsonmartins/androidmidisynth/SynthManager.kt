@@ -30,7 +30,9 @@ class SynthManager(private val context: Context) {
     }
 
     fun setVolume(volume: Int) {
-        fluidsynthCC(0, 7, volume)
+        for (channel in 0 until 16) {
+            fluidsynthCC(channel, 7, volume.coerceIn(0, 127))
+        }
     }
 
     /**

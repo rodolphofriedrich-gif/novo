@@ -1,44 +1,39 @@
-# Android MIDI Synth
+# SoundFont Player para Android
 
-Aplicativo Android que recebe eventos MIDI por **USB** e **Bluetooth LE (BLE)** e os reproduz pelo motor **FluidSynth**, usando Kotlin, C++ e JNI.
+Aplicativo Android simples para carregar e tocar arquivos SoundFont SF2 e SF3 usando o motor nativo FluidSynth.
 
-## Recursos
+## Funções atuais
 
-- Entrada MIDI USB e Bluetooth LE.
-- Reprodução de notas, Note Off e Control Change.
-- Suporte a canais MIDI, troca de programa e pitch bend.
-- SoundFont padrão Kawai Stereo Grand em formato SF3.
-- Síntese nativa com FluidSynth e saída de áudio Oboe em baixa latência.
+- Abrir arquivos SF2/SF3 pelo seletor de arquivos do Android.
+- Copiar o arquivo escolhido para o armazenamento privado do aplicativo antes de carregá-lo.
+- Ler e listar os bancos e presets/instrumentos existentes no SoundFont.
+- Selecionar um instrumento pelo nome, banco e número de programa.
+- Tocar notas em um teclado virtual de duas oitavas, com suporte a acordes por multitoque.
+- Ajustar oitava, volume e reverberação.
+- Interromper todas as notas com um comando.
+
+O aplicativo não exige conexão MIDI externa. A reprodução é feita pelo FluidSynth e pela saída de áudio do próprio Android.
 
 ## Compilação
 
-O projeto usa Gradle, Android Gradle Plugin e CMake/NDK.
+O projeto usa Gradle, Android Gradle Plugin, CMake e NDK.
 
-Para gerar o APK de depuração em um ambiente com Android SDK, NDK e Gradle configurados:
-
-```bash
-gradle assembleDebug
-```
+Para gerar o APK de depuração, execute ./gradlew assembleDebug em um ambiente com Android SDK, NDK e Gradle configurados.
 
 O fluxo automatizado está em [GitHub Actions](.github/workflows/build-apk.yml). O APK de depuração é publicado como artefato da execução.
 
 ## Arquitetura
 
-- `app/src/main/java`: atividade, gerenciamento MIDI USB/BLE e interface JNI do sintetizador.
-- `app/src/main/cpp`: integração C++ com FluidSynth.
-- `app/src/main/cpp/fluidsynth`: cabeçalhos e bibliotecas nativas pré-compiladas.
-- `app/src/main/assets`: SoundFont padrão.
+- app/src/main/java: interface do player, teclado virtual e integração Kotlin/JNI.
+- app/src/main/cpp: integração C++ com FluidSynth.
+- app/src/main/cpp/fluidsynth: cabeçalhos e bibliotecas nativas pré-compiladas.
 
-As bibliotecas nativas atualmente incluídas abrangem `arm64-v8a`, `armeabi-v7a`, `x86` e `x86_64`.
+As bibliotecas nativas atualmente incluídas abrangem arm64-v8a, armeabi-v7a, x86 e x86_64.
 
 ## Licenças e créditos
 
-O código deste projeto é distribuído sob a licença MIT, conforme o arquivo [LICENSE](LICENSE).
+O código deste projeto é distribuído sob a licença MIT, conforme o arquivo LICENSE.
 
-O projeto utiliza componentes de terceiros que mantêm suas próprias licenças. Consulte os arquivos de licença distribuídos junto a cada componente, especialmente:
+O FluidSynth e suas bibliotecas de apoio mantêm suas próprias licenças. Consulte os arquivos de licença distribuídos em app/src/main/cpp/fluidsynth.
 
-- FluidSynth: licença LGPL 2.1.
-- Kawai Stereo Grand SoundFont: CC0 1.0 Universal.
-- Drivers MIDI USB e BLE: licenças dos respectivos projetos upstream.
-
-Este aplicativo deriva do trabalho original [Android MIDI Synth de Robson Martins](https://github.com/robsonsmartins/android-midi-synth) e do artigo [Criando um App Sintetizador MIDI para Android com Kotlin e C++](https://embarcados.com.br/criando-um-app-sintetizador-midi-para-android-com-kotlin-e-c/).
+Este projeto deriva do trabalho original [Android MIDI Synth de Robson Martins](https://github.com/robsonsmartins/android-midi-synth) e do artigo [Criando um App Sintetizador MIDI para Android com Kotlin e C++](https://embarcados.com.br/criando-um-app-sintetizador-midi-para-android-com-kotlin-e-c/).

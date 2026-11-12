@@ -19,6 +19,7 @@ dependencyResolutionManagement {
         maven { url = uri("https://jitpack.io") } // Pode manter, mas não será mais usado para o kshoji
         maven { url = uri("https://github.com/kshoji/USB-MIDI-Driver/raw/master/MIDIDriver/snapshots") }
         maven { url = uri("https://github.com/kshoji/BLE-MIDI-for-Android/raw/master/library/repository") }
+        maven { url = uri("https://github.com/kshoji/javax.sound.midi-for-Android/raw/develop/javax.sound.midi/repository") }
     }
 }
 

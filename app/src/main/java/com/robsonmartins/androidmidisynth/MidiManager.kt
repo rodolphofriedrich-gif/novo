@@ -17,26 +17,27 @@ class MidiManager(
     private var bleMidiProvider: BleMidiCentralProvider? = null
 
     private val usbListener = object : UsbListener {
-        override fun onMidiNoteOn(sender: UsbMidiDevice?, channel: Int, note: Int, velocity: Int) {
-            onMidiEvent(0x90 or ((channel - 1) and 0x0F), note, velocity)
+        // Corrigido: Removido o "?" do sender e o "- 1" do channel
+        override fun onMidiNoteOn(sender: UsbMidiDevice, channel: Int, note: Int, velocity: Int) {
+            onMidiEvent(0x90 or (channel and 0x0F), note, velocity)
         }
-        override fun onMidiNoteOff(sender: UsbMidiDevice?, channel: Int, note: Int, velocity: Int) {
-            onMidiEvent(0x80 or ((channel - 1) and 0x0F), note, velocity)
+        override fun onMidiNoteOff(sender: UsbMidiDevice, channel: Int, note: Int, velocity: Int) {
+            onMidiEvent(0x80 or (channel and 0x0F), note, velocity)
         }
-        override fun onMidiControlChange(sender: UsbMidiDevice?, channel: Int, controller: Int, value: Int) {
-            onMidiEvent(0xB0 or ((channel - 1) and 0x0F), controller, value)
+        override fun onMidiControlChange(sender: UsbMidiDevice, channel: Int, controller: Int, value: Int) {
+            onMidiEvent(0xB0 or (channel and 0x0F), controller, value)
         }
     }
 
     private val bleListener = object : BleListener {
-        override fun onMidiNoteOn(sender: BleMidiDevice?, channel: Int, note: Int, velocity: Int) {
-            onMidiEvent(0x90 or ((channel - 1) and 0x0F), note, velocity)
+        override fun onMidiNoteOn(sender: BleMidiDevice, channel: Int, note: Int, velocity: Int) {
+            onMidiEvent(0x90 or (channel and 0x0F), note, velocity)
         }
-        override fun onMidiNoteOff(sender: BleMidiDevice?, channel: Int, note: Int, velocity: Int) {
-            onMidiEvent(0x80 or ((channel - 1) and 0x0F), note, velocity)
+        override fun onMidiNoteOff(sender: BleMidiDevice, channel: Int, note: Int, velocity: Int) {
+            onMidiEvent(0x80 or (channel and 0x0F), note, velocity)
         }
-        override fun onMidiControlChange(sender: BleMidiDevice?, channel: Int, controller: Int, value: Int) {
-            onMidiEvent(0xB0 or ((channel - 1) and 0x0F), controller, value)
+        override fun onMidiControlChange(sender: BleMidiDevice, channel: Int, controller: Int, value: Int) {
+            onMidiEvent(0xB0 or (channel and 0x0F), controller, value)
         }
     }
 
@@ -53,7 +54,7 @@ class MidiManager(
 
         try {
             bleMidiProvider = BleMidiCentralProvider(context, bleListener).apply {
-                startScanDevice(0)
+                startScanDevice(10000) // 10 segundos de scan
             }
             onLog("BLE MIDI iniciado (scan)")
         } catch (e: Exception) {

@@ -44,7 +44,7 @@ static const int kFluidSynthLatency = 10;
 
 SynthManager* SynthManager::instance = nullptr;
 
-SynthManager::SynthManager(): soundfontId(-1) {
+SynthManager::SynthManager(): settings(nullptr), synth(nullptr), driver(nullptr), soundfontId(-1) {
     // setup synthesizer
     settings = new_fluid_settings();
     if (settings == nullptr) return;
@@ -98,14 +98,14 @@ bool SynthManager::loadSF(const char *soundfontPath, int program) {
     return true;
 }
 
-void SynthManager::noteOn(int note, int velocity) {
+void SynthManager::noteOn(int channel, int note, int velocity) {
     if (synth == nullptr) return;
-    fluid_synth_noteon(synth, 0, note, velocity);
+    fluid_synth_noteon(synth, channel & 0x0F, note, velocity);
 }
 
-void SynthManager::noteOff(int note) {
+void SynthManager::noteOff(int channel, int note) {
     if (synth == nullptr) return;
-    fluid_synth_noteoff(synth, 0, note);
+    fluid_synth_noteoff(synth, channel & 0x0F, note);
 }
 
 void SynthManager::reverb(int level) {
@@ -114,9 +114,19 @@ void SynthManager::reverb(int level) {
     fluid_synth_set_reverb_group_level(synth, -1, level / 127.0);
 }
 
-void SynthManager::sendCC(int controller, int value) {
+void SynthManager::sendCC(int channel, int controller, int value) {
     if (synth == nullptr) return;
-    fluid_synth_cc(synth, 0, controller, value);
+    fluid_synth_cc(synth, channel & 0x0F, controller, value);
+}
+
+void SynthManager::programChange(int channel, int program) {
+    if (synth == nullptr) return;
+    fluid_synth_program_change(synth, channel & 0x0F, program & 0x7F);
+}
+
+void SynthManager::pitchBend(int channel, int value) {
+    if (synth == nullptr) return;
+    fluid_synth_pitch_bend(synth, channel & 0x0F, value & 0x3FFF);
 }
 
 void SynthManager::setLatency(int ms){
@@ -154,7 +164,10 @@ Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthLoadSF(
         JNIEnv *env, jobject, jstring jSoundfontPath, int program) {
     // convert Java string to C string
     const char *soundfontPath = env->GetStringUTFChars(jSoundfontPath, nullptr);
-    return SynthManager::getInstance()->loadSF(soundfontPath, program) ? 0 : -1;
+    if (soundfontPath == nullptr) return -1;
+    const bool loaded = SynthManager::getInstance()->loadSF(soundfontPath, program);
+    env->ReleaseStringUTFChars(jSoundfontPath, soundfontPath);
+    return loaded ? 0 : -1;
 }
 
 /**
@@ -179,8 +192,8 @@ Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthFree(
  */
 JNIEXPORT void JNICALL
 Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthNoteOn(
-        JNIEnv *env, jobject, int note, int velocity) {
-    SynthManager::getInstance()->noteOn(note, velocity);
+        JNIEnv *env, jobject, int channel, int note, int velocity) {
+    SynthManager::getInstance()->noteOn(channel, note, velocity);
 }
 
 /**
@@ -192,8 +205,8 @@ Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthNoteOn(
  */
 JNIEXPORT void JNICALL
 Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthNoteOff(
-        JNIEnv *env, jobject, int note) {
-    SynthManager::getInstance()->noteOff(note);
+        JNIEnv *env, jobject, int channel, int note) {
+    SynthManager::getInstance()->noteOff(channel, note);
 }
 
 /**
@@ -206,8 +219,8 @@ Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthNoteOff(
  */
 JNIEXPORT void JNICALL
 Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthCC(
-        JNIEnv *env, jobject, int controller, int value) {
-    SynthManager::getInstance()->sendCC(controller, value);
+        JNIEnv *env, jobject, int channel, int controller, int value) {
+    SynthManager::getInstance()->sendCC(channel, controller, value);
 }
 
 /**
@@ -217,6 +230,18 @@ Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthCC(
  * @param   (unnamed)      SynthManager (Java) object.
  * @param   level          The reverb level (0 to 127).
  */
+JNIEXPORT void JNICALL
+Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthProgramChange(
+        JNIEnv *env, jobject, int channel, int program) {
+    SynthManager::getInstance()->programChange(channel, program);
+}
+
+JNIEXPORT void JNICALL
+Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthPitchBend(
+        JNIEnv *env, jobject, int channel, int value) {
+    SynthManager::getInstance()->pitchBend(channel, value);
+}
+
 JNIEXPORT void JNICALL
 Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthReverb(
         JNIEnv *env, jobject, int level) {

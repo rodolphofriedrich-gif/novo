@@ -60,9 +60,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         bindViews()
-        synthManager = SynthManager()
-        synthManager.setVolume(100)
-        synthManager.setReverb(15)
         configureControls()
 
         txtStatus.text = "Abra um arquivo SF2 ou SF3 para começar."
@@ -128,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         seekVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 txtVolumeValue.text = progress.toString()
-                synchronized(synthLock) { synthManager.setVolume(progress) }
+                if (::synthManager.isInitialized) synchronized(synthLock) { synthManager.setVolume(progress) }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
@@ -137,7 +134,7 @@ class MainActivity : AppCompatActivity() {
         seekReverb.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 txtReverbValue.text = progress.toString()
-                synchronized(synthLock) { synthManager.setReverb(progress) }
+                if (::synthManager.isInitialized) synchronized(synthLock) { synthManager.setReverb(progress) }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
@@ -171,6 +168,9 @@ class MainActivity : AppCompatActivity() {
                 importedFile = file
                 val loadedPresets = synchronized(synthLock) {
                     if (activityDestroyed) throw IOException("A tela do aplicativo foi encerrada.")
+                    if (!::synthManager.isInitialized) synthManager = SynthManager()
+                    synthManager.setVolume(seekVolume.progress)
+                    synthManager.setReverb(seekReverb.progress)
                     synthManager.allSoundsOff()
                     synthManager.loadSoundFont(file)
                 }

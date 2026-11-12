@@ -18,7 +18,7 @@ O aplicativo não exige conexão MIDI externa. A reprodução é feita pelo Flui
 
 O projeto usa Gradle, Android Gradle Plugin, CMake e NDK.
 
-Para gerar o APK de depuração, execute ./gradlew assembleDebug em um ambiente com Android SDK, NDK e Gradle configurados.
+Para gerar o APK de depuração, execute gradle assembleDebug em um ambiente com Android SDK, NDK e Gradle configurados.
 
 O fluxo automatizado está em [GitHub Actions](.github/workflows/build-apk.yml). O APK de depuração é publicado como artefato da execução.
 

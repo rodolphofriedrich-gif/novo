@@ -9,13 +9,11 @@ appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.9.3"
 constraintlayout = "2.2.0"
-oboe = "1.9.0"
 # ⬇️ NOVO: versões das bibliotecas kshoji
 usbMidiDriver = "0.1.12"
 bleMidi = "0.0.19"
 
 [libraries]
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -23,7 +21,6 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-oboe = { group = "com.google.oboe", name = "oboe", version.ref = "oboe" }
 # ⬇️ NOVO: bibliotecas kshoji via JitPack
 kshoji-usb-midi-driver = { group = "jp.kshoji", name = "midi-driver", version = "0.1.12" }
 kshoji-ble-midi = { group = "jp.kshoji", name = "ble-midi", version = "0.0.19" }

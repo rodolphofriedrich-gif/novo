@@ -29,7 +29,6 @@
 // -----------------------------------------------------------------------------------------------
 
 #include <jni.h>
-#include <unistd.h>
 #include "SynthManager.h"
 
 /* @brief Default sample rate of the FluidSynth, in kHz. */
@@ -57,12 +56,15 @@ SynthManager::SynthManager(): settings(nullptr), synth(nullptr), driver(nullptr)
     synth = new_fluid_synth(settings);
     if (synth == nullptr) {
         delete_fluid_settings(settings);
+        settings = nullptr;
         return;
     }
     driver = new_fluid_audio_driver(settings, synth);
     if (driver == nullptr) {
         delete_fluid_synth(synth);
+        synth = nullptr;
         delete_fluid_settings(settings);
+        settings = nullptr;
         return;
     }
 }

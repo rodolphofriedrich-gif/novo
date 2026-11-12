@@ -32,6 +32,7 @@
 #define ANDROID_MIDI_SYNTH_SYNTHMANAGER_H
 
 #include <fluidsynth.h>
+#include <string>
 
 // -----------------------------------------------------------------------------------------------
 
@@ -79,6 +80,12 @@ public:
     void programChange(int channel, int program);
     /** Set 14-bit MIDI pitch bend on the specified channel. */
     void pitchBend(int channel, int value);
+    /** Select a SoundFont bank and preset on all MIDI channels. */
+    void selectPreset(int bank, int program);
+    /** Stop every active voice on all MIDI channels. */
+    void allSoundsOff();
+    /** Return the loaded SoundFont presets as bank|program|name lines. */
+    std::string getPresetList();
     /**
      * @brief Adjust reverb effect.
      * @param level Level of the reverb.

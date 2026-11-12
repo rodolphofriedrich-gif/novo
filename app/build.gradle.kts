@@ -40,6 +40,12 @@ android {
     }
 }
 
+// ⬇️ NOVO: repositórios para as bibliotecas kshoji
+repositories {
+    maven { url = uri("https://jitpack.io") }
+    maven { url = uri("https://github.com/kshoji/USB-MIDI-Driver/raw/master/MIDIDriver/snapshots") }
+}
+
 dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -48,4 +54,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // ⬇️ NOVO: drivers MIDI kshoji
+    implementation("com.github.kshoji:USB-MIDI-Driver:0.1.4")
+    implementation("com.github.kshoji:BLE-MIDI-for-Android:0.0.9")
 }

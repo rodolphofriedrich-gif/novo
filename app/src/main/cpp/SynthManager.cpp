@@ -30,6 +30,7 @@
 
 #include <jni.h>
 #include <sstream>
+#include <fluidsynth/sfont.h>
 #include "SynthManager.h"
 
 /* @brief Default sample rate of the FluidSynth, in kHz. */

@@ -30,8 +30,8 @@
 
 #include <jni.h>
 #include <sstream>
-#include <fluidsynth/sfont.h>
 #include "SynthManager.h"
+#include <fluidsynth/sfont.h>
 
 /* @brief Default sample rate of the FluidSynth, in kHz. */
 static const int kFluidSynthSampleRate = 44100;

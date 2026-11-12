@@ -8,10 +8,6 @@ import jp.kshoji.driver.midi.device.MidiInputDevice as UsbMidiDevice
 import jp.kshoji.driver.midi.listener.OnMidiInputEventListener as UsbListener
 import jp.kshoji.driver.midi.util.UsbMidiDriver
 
-/**
- * Recebe MIDI de dispositivos USB e Bluetooth LE via bibliotecas kshoji
- * e repassa os eventos para o SynthManager.
- */
 class MidiManager(
     private val context: Context,
     private val onLog: (String) -> Unit,
@@ -20,7 +16,6 @@ class MidiManager(
     private var usbMidiDriver: UsbMidiDriver? = null
     private var bleMidiProvider: BleMidiCentralProvider? = null
 
-    // ---- Listener USB ----
     private val usbListener = object : UsbListener {
         override fun onMidiNoteOn(sender: UsbMidiDevice?, channel: Int, note: Int, velocity: Int) {
             onMidiEvent(0x90 or ((channel - 1) and 0x0F), note, velocity)
@@ -31,10 +26,8 @@ class MidiManager(
         override fun onMidiControlChange(sender: UsbMidiDevice?, channel: Int, controller: Int, value: Int) {
             onMidiEvent(0xB0 or ((channel - 1) and 0x0F), controller, value)
         }
-        // Outros callbacks (Pitch Bend, Program Change) podem ser adicionados aqui.
     }
 
-    // ---- Listener BLE ----
     private val bleListener = object : BleListener {
         override fun onMidiNoteOn(sender: BleMidiDevice?, channel: Int, note: Int, velocity: Int) {
             onMidiEvent(0x90 or ((channel - 1) and 0x0F), note, velocity)
@@ -48,21 +41,19 @@ class MidiManager(
     }
 
     fun start() {
-        // ---- USB ----
         try {
             usbMidiDriver = UsbMidiDriver(context).apply {
                 setOnMidiInputEventListener(usbListener)
-                open() // método confirmado no sample oficial[reference:2]
+                open()
             }
             onLog("USB MIDI driver iniciado")
         } catch (e: Exception) {
             onLog("Erro USB: ${e.message}")
         }
 
-        // ---- BLE ----
         try {
             bleMidiProvider = BleMidiCentralProvider(context, bleListener).apply {
-                startScanDevice(0) // timeout 0 = escaneia continuamente[reference:3]
+                startScanDevice(0)
             }
             onLog("BLE MIDI iniciado (scan)")
         } catch (e: Exception) {
@@ -71,7 +62,7 @@ class MidiManager(
     }
 
     fun stop() {
-        usbMidiDriver?.close() // método confirmado no sample oficial[reference:4]
+        usbMidiDriver?.close()
         bleMidiProvider?.stopScanDevice()
     }
 }

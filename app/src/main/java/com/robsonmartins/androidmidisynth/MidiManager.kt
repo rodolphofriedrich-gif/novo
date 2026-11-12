@@ -155,12 +155,6 @@ class MidiManager(
         }
     }
 
-    /** Inicia USB e BLE quando as permissões Bluetooth já foram concedidas. */
-    fun start() {
-        startUsb()
-        startBle()
-    }
-
     fun stop() {
         try {
             usbMidiDriver?.close()

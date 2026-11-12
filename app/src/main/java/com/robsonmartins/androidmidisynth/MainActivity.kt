@@ -50,6 +50,9 @@ class MainActivity : AppCompatActivity() {
     private var presets: List<SoundFontPreset> = emptyList()
     private var soundFontLoaded = false
     private var octaveShift = 0
+    private var loadedSoundFontFile: File? = null
+    private val synthLock = Any()
+    @Volatile private var activityDestroyed = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         btnStop.setOnClickListener {
             if (soundFontLoaded) {
                 pianoKeyboard.clearPressedKeys()
-                synthManager.allSoundsOff()
+                synchronized(synthLock) { synthManager.allSoundsOff() }
                 txtStatus.text = "Todas as notas foram interrompidas."
             }
         }
@@ -99,10 +102,10 @@ class MainActivity : AppCompatActivity() {
         btnOctaveUp.setOnClickListener { changeOctave(1) }
 
         pianoKeyboard.onNoteOn = { note, velocity ->
-            if (soundFontLoaded) synthManager.noteOn(0, note, velocity)
+            if (soundFontLoaded) synchronized(synthLock) { synthManager.noteOn(0, note, velocity) }
         }
         pianoKeyboard.onNoteOff = { note ->
-            if (soundFontLoaded) synthManager.noteOff(0, note)
+            if (soundFontLoaded) synchronized(synthLock) { synthManager.noteOff(0, note) }
         }
 
         spinnerPresets.isEnabled = false
@@ -114,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                 id: Long
             ) {
                 if (soundFontLoaded && position in presets.indices) {
-                    synthManager.selectPreset(presets[position])
+                    synchronized(synthLock) { synthManager.selectPreset(presets[position]) }
                     txtStatus.text = "Instrumento: ${presets[position].name}"
                 }
             }
@@ -125,7 +128,7 @@ class MainActivity : AppCompatActivity() {
         seekVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 txtVolumeValue.text = progress.toString()
-                synthManager.setVolume(progress)
+                synchronized(synthLock) { synthManager.setVolume(progress) }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
@@ -134,7 +137,7 @@ class MainActivity : AppCompatActivity() {
         seekReverb.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 txtReverbValue.text = progress.toString()
-                synthManager.setReverb(progress)
+                synchronized(synthLock) { synthManager.setReverb(progress) }
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
             override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
@@ -158,19 +161,36 @@ class MainActivity : AppCompatActivity() {
 
     private fun importSoundFont(uri: Uri) {
         btnLoadSoundFont.isEnabled = false
+        setPlayerControlsEnabled(false)
+        pianoKeyboard.clearPressedKeys()
         txtStatus.text = "Copiando e carregando SoundFont…"
+        val previousFile = loadedSoundFontFile
 
         Thread {
             try {
                 val displayName = getDisplayName(uri)
-                val file = copySoundFontToPrivateStorage(uri, displayName)
-                val loadedPresets = synthManager.loadSoundFont(file)
+                val file = copySoundFontToCache(uri, displayName)
+                val loadedPresets = synchronized(synthLock) {
+                    if (activityDestroyed) throw IOException("A tela do aplicativo foi encerrada.")
+                    synthManager.allSoundsOff()
+                    synthManager.loadSoundFont(file)
+                }
                 if (loadedPresets.isEmpty()) {
                     throw IOException("O arquivo não contém instrumentos reconhecidos.")
                 }
-                synthManager.selectPreset(loadedPresets.first())
+                synchronized(synthLock) { synthManager.selectPreset(loadedPresets.first()) }
+                if (activityDestroyed) {
+                    file.delete()
+                    return@Thread
+                }
 
                 runOnUiThread {
+                    if (activityDestroyed) {
+                        file.delete()
+                        return@runOnUiThread
+                    }
+                    loadedSoundFontFile = file
+                    previousFile?.takeIf { it != file }?.delete()
                     presets = loadedPresets
                     soundFontLoaded = true
                     txtSoundFontName.text = displayName
@@ -203,12 +223,14 @@ class MainActivity : AppCompatActivity() {
                     btnOctaveDown.isEnabled = true
                     btnOctaveUp.isEnabled = true
                     spinnerPresets.setSelection(0)
+                    setPlayerControlsEnabled(true)
                     btnLoadSoundFont.isEnabled = true
                     txtStatus.text = "SoundFont carregado. Toque nas teclas."
                 }
             } catch (error: Exception) {
                 runOnUiThread {
                     btnLoadSoundFont.isEnabled = true
+                    setPlayerControlsEnabled(soundFontLoaded)
                     txtStatus.text = error.message ?: "Não foi possível abrir o SoundFont."
                     Toast.makeText(
                         this,
@@ -230,27 +252,32 @@ class MainActivity : AppCompatActivity() {
         return "SoundFont.sf2"
     }
 
-    private fun copySoundFontToPrivateStorage(uri: Uri, displayName: String): File {
+    private fun copySoundFontToCache(uri: Uri, displayName: String): File {
         val extension = displayName.substringAfterLast('.', "").lowercase()
         if (extension != "sf2" && extension != "sf3") {
             throw IOException("Formato não suportado. Selecione um arquivo .sf2 ou .sf3.")
         }
 
         val safeName = displayName.replace(Regex("[^A-Za-z0-9._-]"), "_")
-        val directory = File(filesDir, "soundfonts")
+        val directory = File(cacheDir, "soundfonts")
         if (!directory.exists() && !directory.mkdirs()) {
             throw IOException("Não foi possível criar a pasta interna dos SoundFonts.")
         }
         val destination = File(directory, "${System.currentTimeMillis()}_$safeName")
 
-        val input = contentResolver.openInputStream(uri)
-            ?: throw IOException("Não foi possível ler o arquivo selecionado.")
-        input.use { source ->
-            destination.outputStream().buffered().use { output ->
-                source.copyTo(output, bufferSize = 64 * 1024)
+        try {
+            val input = contentResolver.openInputStream(uri)
+                ?: throw IOException("Não foi possível ler o arquivo selecionado.")
+            input.use { source ->
+                destination.outputStream().buffered().use { output ->
+                    source.copyTo(output, bufferSize = 64 * 1024)
+                }
             }
+            return destination
+        } catch (error: Exception) {
+            destination.delete()
+            throw error
         }
-        return destination
     }
 
     private fun formatFileSize(bytes: Long): String {
@@ -262,11 +289,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setPlayerControlsEnabled(enabled: Boolean) {
+        val available = enabled && soundFontLoaded
+        spinnerPresets.isEnabled = available
+        pianoKeyboard.isEnabled = available
+        btnStop.isEnabled = available
+        btnOctaveDown.isEnabled = available
+        btnOctaveUp.isEnabled = available
+        seekVolume.isEnabled = enabled
+        seekReverb.isEnabled = enabled
+    }
+
     override fun onDestroy() {
+        activityDestroyed = true
         if (::synthManager.isInitialized) {
-            pianoKeyboard.clearPressedKeys()
-            synthManager.release()
+            synchronized(synthLock) {
+                pianoKeyboard.clearPressedKeys()
+                synthManager.release()
+            }
         }
+        loadedSoundFontFile?.delete()
         super.onDestroy()
     }
 }

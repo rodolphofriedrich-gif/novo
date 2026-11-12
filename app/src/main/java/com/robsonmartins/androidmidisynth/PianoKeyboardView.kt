@@ -39,6 +39,10 @@ class PianoKeyboardView @JvmOverloads constructor(
         textAlign = Paint.Align.CENTER
     }
 
+    fun clearPressedKeys() {
+        releaseAllNotes()
+    }
+
     fun setBaseNote(note: Int) {
         releaseAllNotes()
         baseNote = note.coerceIn(0, 96)

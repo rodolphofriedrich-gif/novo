@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:   # permite rodar manualmente na aba Actions
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,8 +24,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      # ⬇️ CORREÇÃO: atualizado de @v3 para @v4
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install NDK
         run: |
@@ -58,30 +59,3 @@ jobs:
           name: android-midi-synth-debug
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
-
-      # ---- OPCIONAL: build de release assinado ----
-      # Descomente e configure os secrets (KEYSTORE_BASE64, KEYSTORE_PASSWORD,
-      # KEY_ALIAS, KEY_PASSWORD) para gerar também o APK release assinado.
-      #
-      # - name: Decode keystore
-      #   if: ${{ secrets.KEYSTORE_BASE64 != '' }}
-      #   run: |
-      #     echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
-      #
-      # - name: Build Release APK
-      #   if: ${{ secrets.KEYSTORE_BASE64 != '' }}
-      #   run: |
-      #     ./gradlew assembleRelease \
-      #       -Pandroid.injected.signing.store.file=$PWD/keystore.jks \
-      #       -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
-      #       -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
-      #       -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }} \
-      #       --stacktrace --no-daemon
-      #
-      # - name: Upload Release APK
-      #   if: ${{ secrets.KEYSTORE_BASE64 != '' }}
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: android-midi-synth-release
-      #     path: app/build/outputs/apk/release/*.apk
-      #     retention-days: 30

@@ -7,11 +7,7 @@
         android:required="false" />
     <uses-feature
         android:name="android.software.midi"
-        android:required="true" />
-
-    <!-- Bluetooth para MIDI BLE (Android 12+) -->
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+        android:required="false" />
 
     <!-- USB Host (opcional) -->
     <uses-feature

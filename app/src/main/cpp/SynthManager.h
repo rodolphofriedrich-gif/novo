@@ -57,17 +57,20 @@ public:
     bool loadSF(const char *soundfontPath, int program = 0);
     /**
      * @brief Play a note.
+     * @param channel MIDI channel (0-15).
      * @param note Note number.
      * @param velocity The velocity of the note.
      */
     void noteOn(int channel, int note, int velocity);
     /**
      * @brief Stop of playing a note.
+     * @param channel MIDI channel (0-15).
      * @param note Note number.
      */
     void noteOff(int channel, int note);
     /**
      * @brief Send a MIDI command.
+     * @param channel MIDI channel (0-15).
      * @param controller Controller number.
      * @param value Value to send.
      */

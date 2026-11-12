@@ -145,10 +145,7 @@ class MainActivity : AppCompatActivity() {
 
         txtVolumeValue.text = seekVolume.progress.toString()
         txtReverbValue.text = seekReverb.progress.toString()
-        pianoKeyboard.isEnabled = false
-        btnStop.isEnabled = false
-        btnOctaveDown.isEnabled = false
-        btnOctaveUp.isEnabled = false
+        setPlayerControlsEnabled(false)
     }
 
     private fun changeOctave(delta: Int) {
@@ -167,9 +164,11 @@ class MainActivity : AppCompatActivity() {
         val previousFile = loadedSoundFontFile
 
         Thread {
+            var importedFile: File? = null
             try {
                 val displayName = getDisplayName(uri)
                 val file = copySoundFontToCache(uri, displayName)
+                importedFile = file
                 val loadedPresets = synchronized(synthLock) {
                     if (activityDestroyed) throw IOException("A tela do aplicativo foi encerrada.")
                     synthManager.allSoundsOff()
@@ -228,7 +227,10 @@ class MainActivity : AppCompatActivity() {
                     txtStatus.text = "SoundFont carregado. Toque nas teclas."
                 }
             } catch (error: Exception) {
+                importedFile?.delete()
+                if (activityDestroyed) return@Thread
                 runOnUiThread {
+                    if (activityDestroyed) return@runOnUiThread
                     btnLoadSoundFont.isEnabled = true
                     setPlayerControlsEnabled(soundFontLoaded)
                     txtStatus.text = error.message ?: "Não foi possível abrir o SoundFont."
@@ -246,7 +248,7 @@ class MainActivity : AppCompatActivity() {
         contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) {
                 val column = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                if (column >= 0) return cursor.getString(column)
+                if (column >= 0) return cursor.getString(column)?.takeIf { it.isNotBlank() } ?: "SoundFont.sf2"
             }
         }
         return "SoundFont.sf2"

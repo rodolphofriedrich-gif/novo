@@ -16,9 +16,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // ⬇️ NOVO: JitPack para as bibliotecas kshoji
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
 rootProject.name = "android-midi-synth"
 include(":app")
- 

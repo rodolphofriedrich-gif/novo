@@ -60,18 +60,22 @@ public:
      * @param note Note number.
      * @param velocity The velocity of the note.
      */
-    void noteOn(int note, int velocity);
+    void noteOn(int channel, int note, int velocity);
     /**
      * @brief Stop of playing a note.
      * @param note Note number.
      */
-    void noteOff(int note);
+    void noteOff(int channel, int note);
     /**
      * @brief Send a MIDI command.
      * @param controller Controller number.
      * @param value Value to send.
      */
-    void sendCC(int controller, int value);
+    void sendCC(int channel, int controller, int value);
+    /** Select a MIDI program on the specified channel. */
+    void programChange(int channel, int program);
+    /** Set 14-bit MIDI pitch bend on the specified channel. */
+    void pitchBend(int channel, int value);
     /**
      * @brief Adjust reverb effect.
      * @param level Level of the reverb.

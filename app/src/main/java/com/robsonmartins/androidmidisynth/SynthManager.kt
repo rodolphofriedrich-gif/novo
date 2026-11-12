@@ -7,10 +7,16 @@ import java.io.IOException
 class SynthManager(private val context: Context) {
 
     private var soundFontPath: String? = null
+    private var released = false
 
     init { fluidsynthInit() }
 
-    fun finalize() { fluidsynthFree() }
+    fun release() {
+        if (!released) {
+            fluidsynthFree()
+            released = true
+        }
+    }
 
     fun loadSF(filename: String, program: Int = 0) {
         try {
@@ -33,9 +39,11 @@ class SynthManager(private val context: Context) {
      */
     fun sendMidiMessage(status: Int, data1: Int, data2: Int) {
         when (status and 0xF0) {
-            0x90 -> if (data2 > 0) fluidsynthNoteOn(data1, data2) else fluidsynthNoteOff(data1)
-            0x80 -> fluidsynthNoteOff(data1)
-            0xB0 -> fluidsynthCC(data1, data2)
+            0x90 -> if (data2 > 0) fluidsynthNoteOn(status and 0x0F, data1, data2) else fluidsynthNoteOff(status and 0x0F, data1)
+            0x80 -> fluidsynthNoteOff(status and 0x0F, data1)
+            0xB0 -> fluidsynthCC(status and 0x0F, data1, data2)
+            0xC0 -> fluidsynthProgramChange(status and 0x0F, data1)
+            0xE0 -> fluidsynthPitchBend(status and 0x0F, (data2 shl 7) or data1)
             // Pitch bend (0xE0) e program change (0xC0) podem ser adicionados depois.
         }
     }
@@ -60,8 +68,10 @@ class SynthManager(private val context: Context) {
     external fun fluidsynthInit()
     external fun fluidsynthLoadSF(soundfontPath: String?, program: Int): Int
     external fun fluidsynthFree()
-    external fun fluidsynthNoteOn(note: Int, velocity: Int)
-    external fun fluidsynthNoteOff(note: Int)
-    external fun fluidsynthCC(controller: Int, value: Int)
+    external fun fluidsynthNoteOn(channel: Int, note: Int, velocity: Int)
+    external fun fluidsynthNoteOff(channel: Int, note: Int)
+    external fun fluidsynthCC(channel: Int, controller: Int, value: Int)
+    external fun fluidsynthProgramChange(channel: Int, program: Int)
+    external fun fluidsynthPitchBend(channel: Int, value: Int)
     external fun fluidsynthReverb(level: Int)
 }

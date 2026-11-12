@@ -60,7 +60,7 @@ class MidiManager(
         override fun onNRPNMessage(sender: BleMidiDevice, channel: Int, function: Int, value: Int) {}
     }
 
-    fun start() {
+    fun startUsb() {
         // USB MIDI 0.1.12: UsbMidiDriver implementa os próprios callbacks de entrada.
         try {
             usbMidiDriver = object : UsbMidiDriver(context) {
@@ -124,6 +124,9 @@ class MidiManager(
             onLog("Erro USB: ${e.message}")
         }
 
+    }
+
+    fun startBle() {
         // BLE MIDI 0.0.19: o listener é associado ao dispositivo de entrada.
         try {
             bleMidiProvider = BleMidiCentralProvider(context).apply {
@@ -143,6 +146,12 @@ class MidiManager(
         } catch (e: Exception) {
             onLog("Erro BLE: ${e.message}")
         }
+    }
+
+    /** Inicia USB e BLE quando as permissões Bluetooth já foram concedidas. */
+    fun start() {
+        startUsb()
+        startBle()
     }
 
     fun stop() {

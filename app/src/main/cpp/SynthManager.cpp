@@ -173,6 +173,7 @@ JNIEXPORT int JNICALL
 Java_com_robsonmartins_androidmidisynth_SynthManager_fluidsynthLoadSF(
         JNIEnv *env, jobject, jstring jSoundfontPath, int program) {
     // convert Java string to C string
+    if (jSoundfontPath == nullptr) return -1;
     const char *soundfontPath = env->GetStringUTFChars(jSoundfontPath, nullptr);
     if (soundfontPath == nullptr) return -1;
     const bool loaded = SynthManager::getInstance()->loadSF(soundfontPath, program);
